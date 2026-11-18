@@ -72,8 +72,17 @@ export class Screens {
     this.el.className = dim ? 'screens dim' : 'screens';
     this.el.appendChild(node);
     this.current = name;
+    const heading = node.querySelector('h2');
+    if (name !== 'title' && heading) {
+      heading.id ||= `screen-title-${name}`;
+      node.setAttribute('role', 'dialog');
+      node.setAttribute('aria-modal', 'true');
+      node.setAttribute('aria-labelledby', heading.id);
+      node.tabIndex = -1;
+    }
     const first = node.querySelector('button:not([disabled])');
     if (first && !matchMedia('(pointer: coarse)').matches) first.focus({ preventScroll: true });
+    else if (node.tabIndex === -1) node.focus({ preventScroll: true });
   }
 
   // ---------------------------------------------------------------- title

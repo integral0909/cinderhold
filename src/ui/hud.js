@@ -102,13 +102,14 @@ export class Hud {
     this.planning = h('div.planning', 'Planning — the next wave waits for you. Press ', h('b', 'Space'), ' to send it.');
     this.planning.hidden = true;
 
-    this.announceEl = h('div.announce');
+    this.announceEl = h('div.announce', { role: 'status', 'aria-live': 'polite' });
+    this.liveEl = h('div.sr-only', { role: 'status', 'aria-live': 'polite' });
     this.cards = h('div.cards');
     this.hint = h('div.hint');
     this.hint.hidden = true;
     this.vignette = h('div.vignette');
 
-    this.el.append(this.vignette, this.top, this.modsEl, this.planning, this.bossBar, this.waveBox, this.minimap.canvas, this.meter.el, this.bar, this.abilityBar, this.tip, this.panel, this.announceEl, this.cards, this.hint);
+    this.el.append(this.vignette, this.top, this.modsEl, this.planning, this.bossBar, this.waveBox, this.minimap.canvas, this.meter.el, this.bar, this.abilityBar, this.tip, this.panel, this.announceEl, this.liveEl, this.cards, this.hint);
   }
 
   attach(game, { tutorial, replay = false }) {
@@ -118,11 +119,13 @@ export class Hud {
     this.el.classList.toggle('replay', replay);
     this.game = game;
     this.cache = {};
+    this.livesSeen = undefined;
     this.selected = null;
     this.buildType = null;
     this.panel.hidden = true;
     clear(this.cards);
     clear(this.announceEl);
+    clear(this.liveEl);
     for (const type of TOWER_ORDER) {
       const allowed = game.towerAllowed(type);
       this.buildBtns[type].b.hidden = !allowed;
@@ -151,6 +154,9 @@ export class Hud {
       }
     };
     set('lives', g.lives, (v) => {
+      const prev = this.livesSeen;
+      this.livesSeen = v;
+      if (prev !== undefined && v < prev) this.liveEl.textContent = `${prev - v} ${prev - v === 1 ? 'life' : 'lives'} lost, ${v} left`;
       this.lives.textContent = String(v);
       this.lives.parentElement.classList.toggle('low', v <= Math.max(3, g.maxLives * 0.25));
     });
@@ -350,7 +356,7 @@ export class Hud {
         icon(t.type, 'icon'),
         h('div', h('div.tp-name', def.name, t.rank ? h('span.rank', { title: `Veteran rank ${t.rank}: +${t.rank * 6}% damage` }, ' ', '★'.repeat(t.rank)) : null),
           h('div.pips', [0, 1, 2].map((i) => h(`span.pip${i <= t.tier ? '.on' : ''}`)))),
-        h('button.close', { title: 'Close (Esc)', 'aria-label': 'Close', onclick: () => a.deselect() }, '×'),
+        h('button.close', { title: 'Close (Esc)', 'aria-label': 'Close tower panel', onclick: () => a.deselect() }, '×'),
       ),
       h('table.tp-stats', rows),
       def.kind === 'aura'

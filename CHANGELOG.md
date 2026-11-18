@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Accessibility: menu screens are announced as dialogs and take focus when
+  opened, the tower panel close button has a clearer name, HUD buttons show a
+  focus ring, and wave starts and lives lost are announced to screen readers.
+
 ## 1.3.0
 
 - Replays: every finished battle is saved (last twelve) and can be watched
