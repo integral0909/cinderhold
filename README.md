@@ -74,7 +74,7 @@ browser's localStorage.
 | Input | Action |
 | --- | --- |
 | Left click | Build the chosen tower / select a tower |
-| 1 – 6 | Choose a tower to build |
+| 1 – 7 | Choose a tower to build |
 | Shift + click | Keep building the same tower |
 | Right drag | Rotate the camera |
 | Wheel / pinch | Zoom |
