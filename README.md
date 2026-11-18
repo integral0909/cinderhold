@@ -52,7 +52,7 @@ that calls every wave early.
 
 ## Running
 
-Requires Node.js 18 or newer.
+Requires Node.js 20 or newer.
 
 ```sh
 npm install
