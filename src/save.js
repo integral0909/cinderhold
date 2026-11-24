@@ -52,6 +52,9 @@ function fresh() {
 export class Save {
   constructor() {
     this.data = fresh();
+    this.persistHint = null;
+    this.onPersistFailureHint = null;
+    this._persistHintShown = false;
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) {
@@ -74,12 +77,44 @@ export class Save {
     while (this.starsSpent() > this.starsEarned()) this.data.perks.pop();
   }
 
+  _write() {
+    localStorage.setItem(KEY, JSON.stringify(this.data));
+  }
+
+  // Returns { ok, recovered?, hint? }. Never throws: a full or blocked store
+  // must not crash a battle. On QuotaExceeded (or any write failure), drop
+  // the oldest replay and retry once. If that still fails, put the replay
+  // back in memory so we do not silently destroy it, leave the previous
+  // stored save untouched, and surface a one-time Export hint.
   persist() {
     try {
-      localStorage.setItem(KEY, JSON.stringify(this.data));
+      this._write();
+      return { ok: true };
     } catch {
-      // ignore
+      // try recovery below
     }
+    const list = this.data.replays;
+    if (list.length) {
+      let oldest = 0;
+      for (let i = 1; i < list.length; i++) {
+        if ((list[i].date || 0) < (list[oldest].date || 0)) oldest = i;
+      }
+      const [removed] = list.splice(oldest, 1);
+      try {
+        this._write();
+        return { ok: true, recovered: true };
+      } catch {
+        list.splice(oldest, 0, removed);
+      }
+    }
+    const result = { ok: false };
+    if (!this._persistHintShown) {
+      this._persistHintShown = true;
+      result.hint = 'Progress could not be saved. Use Export save in Settings to keep a copy.';
+      this.persistHint = result.hint;
+      if (typeof this.onPersistFailureHint === 'function') this.onPersistFailureHint(result.hint);
+    }
+    return result;
   }
 
   get settings() {

@@ -193,6 +193,7 @@ const ctx = { save, audio, actions };
 const hud = new Hud(document.getElementById('hud'), ctx);
 const screens = new Screens(document.getElementById('screens'), ctx);
 hud.detach();
+save.onPersistFailureHint = (msg) => hud.toast(msg);
 
 // ---------------------------------------------------------------- sessions
 
